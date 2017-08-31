@@ -34,9 +34,9 @@ Game.create = () => {
   Game.input_types[Phaser.Keyboard.UP] = MOVEMENT.UP;
   Game.input_types[Phaser.Keyboard.DOWN] = MOVEMENT.DOWN;
 
-  Client.NewUser();
+  client.NewUser();
 //  Client.Ping();
-  Client.GameReady();
+  client.GameReady();
 };
 
 let fps_timer = 0;
@@ -87,7 +87,7 @@ function InputManager() {
 
   for (const type in Game.input_types) {
     if (phaser.input.keyboard.isDown(type))
-      Client.Input({
+      client.Input({
         type: Game.input_types[type],
         deltatime: deltatime
       });
