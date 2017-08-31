@@ -2,7 +2,7 @@ const protocol = require('../public/protocol');
 const Player = require('./lib/player');
 const MyMath = require('./lib/mymath');
 const RoomMng = require('./mng/room_mng');
-const ClientInputQueue = require('../public/cinput_queue');
+const ServerUpdater = require('./mng/server_updater');
 
 module.exports = (io, socket) => {
   RoomMng.Enter(socket.id, socket);
@@ -52,7 +52,7 @@ module.exports = (io, socket) => {
   socket.on(protocol.GAMEREADY, () => {
     socket.emit(protocol.GAMESTART);
     socket.on(protocol.UPDATEMOVEMENT, (packet) => {
-      ClientInputQueue.EnqueClientInput({
+      ServerUpdater.cinput_queue.Enque({
         socket: socket,
         room: user.m_room,
         player: user.m_player,

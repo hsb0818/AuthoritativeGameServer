@@ -1,20 +1,23 @@
 'use strict';
 
-const ClientInputQueue = require('../../public/cinput_queue');
+const Queue = require('../../public/queue');
 const protocol = require('../../public/protocol');
 const ServerMng = require('./server_mng');
 
 class ServerUpdater {
   constructor () {
+    const self = this;
+
     this.Server = Server;
     this.Game = Game;
+    this.cinput_queue = new Queue();
 
     function Server(deltatime, io) {
       UpdateInput(ServerMng.GDT, io);
     }
 
     function UpdateInput(deltatime, io) {
-      let input = ClientInputQueue.DequeClientInput();
+      let input = self.cinput_queue.Deque();
       while (input !== null) {
         input.player.Move(input.type, input.deltatime);
         console.log(input.seqnum + '/ ' + input.type + ': ' + input.deltatime +
@@ -33,7 +36,7 @@ class ServerUpdater {
           y: input.player.pos.y
         });
 
-        input = ClientInputQueue.DequeClientInput();
+        input = self.cinput_queue.Deque();
       }
     }
 

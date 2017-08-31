@@ -11,11 +11,13 @@ var Client = {
   },
   server_state: {x:0, y:0, seqnum:0},
   predicted_state: {x:0, y:0, seqnum:0},
+  InterpolateEntity: () => {
+  }
 };
 
-const ClientInputs = ClientInputQueue.GetInstance();
+const ClientInputs = new Queue();
 
-Client.socket = io('14.38.170.92:9209', {
+Client.socket = io('121.161.72.118:9209', {
   path: '/game'
 });
 
@@ -58,7 +60,7 @@ Client.GameReady = () => { Client.socket.emit(protocol.GAMEREADY); };
 Client.NewUser = () => { Client.socket.emit(protocol.NEWUSER); };
 
 Client.Input = (type) => {
-  ClientInputs.EnqueClientInput(type);
+  ClientInputs.Enque(type);
   Client.UpdatePredictedState();
 
   Client.seqnum_last = Client.SeqNum();
@@ -112,11 +114,10 @@ Client.socket.on(protocol.UPDATEMOVEMENT, (state) => {
     return;
 
   Client.server_state = state;
-  console.log('res pos : ' + state.x + ', ' + state.y);
 
   // delete prev state
   while (ClientInputs.Count() > (Client.seqnum_last - Client.server_state.seqnum)) {
-    ClientInputs.DequeClientInput();
+    ClientInputs.Deque();
   }
 
   Client.UpdatePredictedState();
