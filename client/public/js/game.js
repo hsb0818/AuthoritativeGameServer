@@ -35,7 +35,7 @@ Game.create = () => {
   Game.input_types[Phaser.Keyboard.DOWN] = MOVEMENT.DOWN;
 
   client.NewUser();
-//  Client.Ping();
+  client.Ping();
   client.GameReady();
 };
 
@@ -47,14 +47,14 @@ Game.update = () => {
 
   const time = Date.now();
   if (time - fps_timer >= CONFIG.FPS) {
-    PhysicsUpdate();
+    PhysicsUpdate(phaser.time.elapsedMS);
     fps_timer = time;
   }
   else
     fps_timer += phaser.time.elapsedMS;
 
   if (sps_timer >= CONFIG.SPS) {
-    ServerUpdate();
+    ServerUpdate(phaser.time.elapsedMS);
     sps_timer -= CONFIG.SPS;
   }
   else
@@ -74,11 +74,12 @@ Game.removePlayer = (id) => {
   delete Game.player_map[id];
 };
 
-function PhysicsUpdate() {
+function PhysicsUpdate(deltaMS) {
+  client.InterpolateEntity();
   InputManager();
 }
 
-function ServerUpdate() {
+function ServerUpdate(deltaMS) {
 }
 
 function InputManager() {

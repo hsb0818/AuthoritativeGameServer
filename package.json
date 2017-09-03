@@ -14,6 +14,7 @@
     "express": "^4.15.4",
     "express-session": "^1.15.5",
     "node-uuid": "^1.4.8",
+    "performance-now": "^2.1.0",
     "socket.io": "^2.0.3"
   }
 }

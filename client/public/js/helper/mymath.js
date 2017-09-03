@@ -5,6 +5,7 @@ const MyMath = {};
   MyMath.Lerp2 = Lerp2;
 
   function Lerp(a, b, t) {
+    t = t > 1.0 ? 1.0 : t;
     return a + (b - a) * t;
   }
 

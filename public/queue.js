@@ -2,9 +2,29 @@ class Queue {
   constructor() {
     this.Enque = Enque;
     this.Deque = Deque;
+    this.Remove = Remove;
     this.IsEmpty = IsEmpty;
     this.ForEach = ForEach;
     this.Count = () => { return m_queue.length; };
+    this.Front = () => {
+      if (this.IsEmpty())
+        return null;
+      return m_queue[0];
+    };
+
+    this.Back = () => {
+      if (this.IsEmpty())
+        return null;
+      return m_queue[this.Count() - 1];
+    };
+    this.Value = (idx) => {
+      if (idx < 0)
+        return null;
+      else if (idx >= this.Count())
+        return null;
+
+      return m_queue[idx];
+    };
 
     /*
      *
@@ -35,6 +55,14 @@ class Queue {
       let ret = m_queue[0];
       m_queue.splice(0, 1);
       return ret;
+    }
+
+    function Remove(count) {
+      if (count < 1 || count > this.Count())
+        return false;
+
+      m_queue.splice(0, count);
+      return true;
     }
 
     function IsEmpty() {

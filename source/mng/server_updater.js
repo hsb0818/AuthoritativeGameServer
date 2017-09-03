@@ -13,18 +13,21 @@ class ServerUpdater {
     this.cinput_queue = new Queue();
 
     function Server(deltatime, io) {
-      UpdateInput(ServerMng.GDT, io);
+      UpdateInput(ServerMng.GDT(), io);
     }
 
     function UpdateInput(deltatime, io) {
       let input = self.cinput_queue.Deque();
+      if (input === null) {
+
+        return;
+      }
+
       while (input !== null) {
         input.player.Move(input.type, input.deltatime);
-        console.log(input.seqnum + '/ ' + input.type + ': ' + input.deltatime +
-          ': ' + input.player.pos.x +
-          ', ' + input.player.pos.y);
 
         input.socket.broadcast.to(input.room).emit(protocol.UPDATEMOVEMENTANOTHER, {
+          server_time: input.server_time,
           id: input.player.id,
           x: input.player.pos.x,
           y: input.player.pos.y

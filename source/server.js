@@ -3,6 +3,8 @@ const Player = require('./lib/player');
 const MyMath = require('./lib/mymath');
 const RoomMng = require('./mng/room_mng');
 const ServerUpdater = require('./mng/server_updater');
+const ServerMng = require('./mng/server_mng');
+const PerformanceNow = require("performance-now");
 
 module.exports = (io, socket) => {
   RoomMng.Enter(socket.id, socket);
@@ -11,8 +13,7 @@ module.exports = (io, socket) => {
   socket.user = user;
 
   console.log('joined room users : ' + RoomMng.GetUserCount(user.m_room));
-
-//  socket.emit(protocol.CONNECT, {system:'welcome!'});
+  socket.emit(protocol.CONNECT, ServerMng.SFPS());
   socket.on(protocol.DISCONNECT, (packet) => {
     RoomMng.Leave(user);
     io.sockets.in(user.m_room).emit(protocol.REMOVEPLAYER, user.m_player.id);
@@ -20,8 +21,15 @@ module.exports = (io, socket) => {
     console.log(RoomMng.GetUserCount(user.m_room) + ' peoples left..');
   });
 
-  socket.on(protocol.PING, () => {
-    socket.emit(protocol.PING);
+  socket.on(protocol.PING, (client_time) => {
+    socket.emit(protocol.PONG, {
+      client_time: client_time,
+      server_time: Date.now(),
+    });
+  });
+
+  socket.on(protocol.PONG, (server_time) => {
+    console.log(Date.now(), server_time);
   });
 
   socket.on(protocol.NEWUSER, (packet) => {
@@ -56,9 +64,10 @@ module.exports = (io, socket) => {
         socket: socket,
         room: user.m_room,
         player: user.m_player,
+        seqnum: packet.seqnum,
         type: packet.type,
         deltatime: packet.deltatime,
-        seqnum: packet.seqnum
+        server_time: packet.server_time,
       });
     });
   });
