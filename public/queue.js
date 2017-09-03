@@ -13,7 +13,7 @@ class Queue {
     };
 
     this.Back = () => {
-      if (this.IsEmpty())
+      if (this.IsEmpty() || this.Count() === 0)
         return null;
       return m_queue[this.Count() - 1];
     };
