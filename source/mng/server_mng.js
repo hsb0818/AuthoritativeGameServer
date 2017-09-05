@@ -9,13 +9,15 @@ class ServerMng {
     const SFPS = 1000 / 22;
     const JSTICK_MIN = 16;
     const GDT = 1 / 66.6;
+    const MAX_LATENCY = 1000;
 
     this.UPDATE_TIME_FREQ = () => { return UPDATE_TIME_FREQ; };
     this.GFPS = () => { return GFPS; };
     this.SFPS = () => { return SFPS; };
     this.JSTICK_MIN = () => { return JSTICK_MIN; };
-
     this.GDT = () => { return GDT; };
+    this.MAX_LATENCY = () => { return MAX_LATENCY; };
+
     this.ServerStart = ServerStart;
     this.GameStart = GameStart;
     this.ServerTime = (() => {

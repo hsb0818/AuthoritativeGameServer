@@ -58,12 +58,14 @@ class ClientMng {
     this.m_inputs.Enque(input_info);
     this.UpdatePredictedState();
 
-    this.m_socket.emit(protocol.UPDATEMOVEMENT, {
+    const snapshot = {
       seqnum: this.SeqNum(),
       type: input_info.type,
       server_time: Date.now() + this.C2SDelta(),
       deltatime: input_info.deltatime
-    });
+    };
+
+    this.m_socket.emit(protocol.UPDATEMOVEMENT, snapshot);
   }
 
   SyncState(player_id) {

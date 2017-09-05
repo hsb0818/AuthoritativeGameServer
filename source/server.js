@@ -69,6 +69,14 @@ module.exports = (io, socket) => {
         deltatime: packet.deltatime,
         server_time: packet.server_time,
       });
+
+      ServerUpdater.snap_queue.Enque({
+        socket: socket,
+        room: room,
+        player: packet.player,
+        type: packet.type,
+        server_time: packet.server_time
+      });
     });
   });
 };

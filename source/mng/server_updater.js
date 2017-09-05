@@ -11,15 +11,16 @@ class ServerUpdater {
     this.Server = Server;
     this.Game = Game;
     this.cinput_queue = new Queue();
+    this.snap_queue = new Queue();
 
     function Server(deltatime, io) {
       UpdateInput(ServerMng.GDT(), io);
+      UpdateSnapshot();
     }
 
     function UpdateInput(deltatime, io) {
       let input = self.cinput_queue.Deque();
       if (input === null) {
-
         return;
       }
 
@@ -43,9 +44,32 @@ class ServerUpdater {
       }
     }
 
-    function Game(deltatime) {
+    //retain only young states by the max-latency.
+    function UpdateSnapshot() {
+      const state = self.snap_queue.Front();
+      if (state.server_time <= Date.now() - ServerMng.MAX_LATENCY()) {
+        return;
+      }
+
+      let threshold = 0;
+      self.snap_queue.ForEach((i, state) => {
+        if (state.server_time > Date.now() - ServerMng.MAX_LATENCY()) {
+          threshold++;
+        }
+        else
+          return null;
+      });
+
+      self.snap_queue.Remove(threshold);
     }
 
+    function Game(deltatime) {
+      UpdateHit();
+    }
+
+    function UpdateHit() {
+      
+    }
   }
 }
 
