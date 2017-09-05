@@ -3,12 +3,11 @@ class ClientMng {
     const self = this;
 
     this.SFPS = 200;
-    this.m_socket = io('14.38.188.194:9209', {
+    this.m_socket = io('121.161.44.216:9209', {
       path: '/game'
     });
     this.m_inputs = new Queue();
-    this.m_extrainputs = new Queue();
-    this.m_threshold = 0;
+    this.m_extra = {};
     this.m_server_state = {x:0, y:0, seqnum:0};
     this.m_predicted_state = {x:0, y:0, seqnum:0};
 
@@ -43,6 +42,13 @@ class ClientMng {
         self.m_socket.emit(protocol.PING, Date.now());
         self.Ping();
       }, CONFIG.PING_INTERVAL);
+    };
+  }
+
+  NewUserInit(id) {
+    this.m_extra[id] = {
+      updates: new Queue(),
+      threshold: 0
     };
   }
 
@@ -104,52 +110,61 @@ class ClientMng {
   }
 
   InterpolateEntity() {
-    const cur = Date.now() + this.C2SDelta() - this.SFPS * 1.5;
-    const FindThreshold = function() {
-      let threshold = 0;
-      this.m_extrainputs.ForEach((i, state) => {
-        if (state.server_time < cur)
-          threshold++;
-        else
-          return null;
-      });
+    const _InterPolateEntity = function(id) {
+      const cur = Date.now() + this.C2SDelta() - this.SFPS * 1.5;
+      const FindThreshold = function() {
+        let threshold = 0;
+        this.m_extra[id].updates.ForEach((i, state) => {
+//          console.log(state + ' < ' + cur);
+          if (state.server_time < cur)
+            threshold++;
+          else
+            return null;
+        });
 
-      return threshold;
+        return threshold;
+      }.bind(this);
+
+      let threshold = FindThreshold();
+      if (threshold === 0)
+        return;
+      else if (threshold === this.m_extra[id].updates.Count()) {
+        const last = this.m_extra[id].updates.Back();
+        this.m_extra[id].updates.Remove(threshold);
+        this.m_extra[id].threshold = 0;
+
+        Game.player_map[id].x = last.x;
+        Game.player_map[id].y = last.y;
+        return;
+      }
+
+      console.log(threshold);
+
+      if (this.m_extra[id].threshold > 0 &&
+        threshold !== this.m_extra[id].threshold) {
+        this.m_extra[id].updates.Remove(this.m_extra[id].threshold);
+        threshold = FindThreshold();
+      }
+      this.m_extra[id].threshold = threshold;
+
+      const before = this.m_extra[id].updates.Value(threshold -1);
+      const after = this.m_extra[id].updates.Value(threshold);
+      const total = (after.server_time - before.server_time);
+
+      let t = 0;
+      if (total === 0)
+        t = 1;
+      else
+        t = (cur - before.server_time) / total;
+
+      const new_pos = MyMath.Lerp2(before, after, t);
+      Game.player_map[id].x = new_pos.x;
+      Game.player_map[id].y = new_pos.y;
     }.bind(this);
 
-    let threshold = FindThreshold();
-    if (threshold === 0)
-      return;
-    else if (threshold === this.m_extrainputs.Count()) {
-      const last = this.m_extrainputs.Back();
-      this.m_extrainputs.Remove(threshold);
-      this.m_threshold = 0;
-
-      Game.player_map[last.id].x = last.x;
-      Game.player_map[last.id].y = last.y;
-      return;
+    for (const id in this.m_extra) {
+      _InterPolateEntity(id);
     }
-
-    if (this.m_threshold > 0 &&
-      threshold !== this.m_threshold) {
-      this.m_extrainputs.Remove(this.m_threshold);
-      threshold = FindThreshold();
-    }
-    this.m_threshold = threshold;
-
-    const before = this.m_extrainputs.Value(threshold -1);
-    const after = this.m_extrainputs.Value(threshold);
-    const total = (after.server_time - before.server_time);
-
-    let t = 0;
-    if (total === 0)
-      t = 1;
-    else
-      t = (cur - before.server_time) / total;
-
-    const new_pos = MyMath.Lerp2(before, after, t);
-    Game.player_map[before.id].x = new_pos.x;
-    Game.player_map[before.id].y = new_pos.y;
   }
 
   Move(prev_state, type, deltatime) {

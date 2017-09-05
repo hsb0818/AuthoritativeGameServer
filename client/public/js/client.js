@@ -13,6 +13,7 @@ client.m_socket.on(protocol.PONG, (packet) => {
 client.m_socket.on(protocol.NEWUSER, (player) => {
   client.m_server_state.x = player.pos.x;
   client.m_server_state.y = player.pos.y;
+  client.NewUserInit(player.id);
 
   Game.addNewPlayer(player.id, player.pos.x, player.pos.y);
 });
@@ -22,6 +23,7 @@ client.m_socket.on(protocol.LOADALLPLAYER, (packet) => {
 
   Game.myid = packet.myid;
   for(let player of packet.players) {
+    client.NewUserInit(player.id);
     Game.addNewPlayer(player.id, player.pos.x, player.pos.y);
   }
 });
@@ -29,7 +31,8 @@ client.m_socket.on(protocol.LOADALLPLAYER, (packet) => {
 client.m_socket.on(protocol.REMOVEPLAYER, (id) => { Game.removePlayer(id); });
 client.m_socket.on(protocol.GAMESTART, () => { Game.Play(); });
 client.m_socket.on(protocol.UPDATEMOVEMENTANOTHER, (state) => {
-  client.m_extrainputs.Enque(state);
+  client.m_extra[state.id].updates.Enque(state);
+  console.log(client.m_extra[state.id].updates.Front());
 });
 
 client.m_socket.on(protocol.UPDATEMOVEMENT, (state) => {

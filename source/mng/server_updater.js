@@ -46,6 +46,9 @@ class ServerUpdater {
 
     //retain only young states by the max-latency.
     function UpdateSnapshot() {
+      if (self.snap_queue.IsEmpty())
+        return;
+
       const state = self.snap_queue.Front();
       if (state.server_time <= Date.now() - ServerMng.MAX_LATENCY()) {
         return;
@@ -68,7 +71,7 @@ class ServerUpdater {
     }
 
     function UpdateHit() {
-      
+
     }
   }
 }
