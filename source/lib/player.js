@@ -1,7 +1,7 @@
 'use strict';
 
 const UUID = require('node-uuid');
-const MOVEMENT = require('../../public/define').MOVEMENT;
+const ACTION = require('../../public/define').ACTION;
 
 class Player {
   constructor(_x, _y) {
@@ -17,19 +17,19 @@ class Player {
 
   Move(type, deltatime) {
     switch (type) {
-      case MOVEMENT.LEFT: {
+      case ACTION.LEFT: {
         this.pos.x -= this.speed * deltatime;
         break;
       }
-      case MOVEMENT.RIGHT: {
+      case ACTION.RIGHT: {
         this.pos.x += this.speed * deltatime;
         break;
       }
-      case MOVEMENT.UP: {
+      case ACTION.UP: {
         this.pos.y -= this.speed * deltatime;
         break;
       }
-      case MOVEMENT.DOWN: {
+      case ACTION.DOWN: {
         this.pos.y += this.speed * deltatime;
         break;
       }

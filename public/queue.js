@@ -37,10 +37,14 @@ class Queue {
     */
     let m_queue = [];
 
+    // ForEach method is jquery style.
     function ForEach(func) {
       for (const key in m_queue) {
-        if (func(key, m_queue[key]) === null)
+        const ret = func(key, m_queue[key]);
+        if (ret === null || ret === false)
           break;
+        else if (ret === true)
+          continue;
       }
     }
 

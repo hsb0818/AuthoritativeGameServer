@@ -30,11 +30,11 @@ client.m_socket.on(protocol.LOADALLPLAYER, (packet) => {
 
 client.m_socket.on(protocol.REMOVEPLAYER, (id) => { Game.removePlayer(id); });
 client.m_socket.on(protocol.GAMESTART, () => { Game.Play(); });
-client.m_socket.on(protocol.UPDATEMOVEMENTANOTHER, (state) => {
+client.m_socket.on(protocol.UPDATEACTIONANOTHER, (state) => {
   client.m_extra[state.id].updates.Enque(state);
-  console.log(client.m_extra[state.id].updates.Front());
+//  console.log(client.m_extra[state.id].updates.Front());
 });
 
-client.m_socket.on(protocol.UPDATEMOVEMENT, (state) => {
+client.m_socket.on(protocol.UPDATEACTION, (state) => {
   client.ReConciliation(state);
 });

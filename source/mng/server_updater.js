@@ -10,8 +10,8 @@ class ServerUpdater {
 
     this.Server = Server;
     this.Game = Game;
-    this.cinput_queue = new Queue();
-    this.snap_queue = new Queue();
+    this.cinput_queue = new Queue(); // for client self
+    this.snap_queue = new Queue(); // for another client
 
     function Server(deltatime, io) {
       UpdateInput(ServerMng.GDT(), io);
@@ -27,14 +27,14 @@ class ServerUpdater {
       while (input !== null) {
         input.player.Move(input.type, input.deltatime);
 
-        input.socket.broadcast.to(input.room).emit(protocol.UPDATEMOVEMENTANOTHER, {
+        input.socket.broadcast.to(input.room).emit(protocol.UPDATEACTIONANOTHER, {
           server_time: input.server_time,
           id: input.player.id,
           x: input.player.pos.x,
           y: input.player.pos.y
         });
 
-        input.socket.emit(protocol.UPDATEMOVEMENT, {
+        input.socket.emit(protocol.UPDATEACTION, {
           seqnum: input.seqnum,
           x: input.player.pos.x,
           y: input.player.pos.y

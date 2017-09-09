@@ -11,16 +11,20 @@ Game.Play = () => {
 };
 
 Game.init = () => {
-  phaser.state.disableVisibilityChange = true;
+  phaser.stage.backgroundColor = "#000000";
+  phaser.stage.disableVisibilityChange = true;
 };
 
 Game.preload = () => {
-  phaser.load.tilemap('map', './assets/map/testmap.json', null, Phaser.Tilemap.TILED_JSON);
-  phaser.load.spritesheet('tileset', './assets/map/tilesheet.png', 32, 32);
-  phaser.load.image('sprite','./assets/img/sprite.png');
+//  phaser.load.tilemap('map', './assets/map/testmap.json', null, Phaser.Tilemap.TILED_JSON);
+//  phaser.load.spritesheet('tileset', './assets/map/tilesheet.png', 32, 32);
+  phaser.load.image('blueship','./assets/img/playerShip1_blue.png');
+  phaser.load.image('greenship','./assets/img/playerShip1_green.png');
+  phaser.load.image('bluebullet1','./assets/img/Bullet1_blue.png');
 };
 
 Game.create = () => {
+  /*
   let map = phaser.add.tilemap('map');
   map.addTilesetImage('tilesheet', 'tileset'); // tilesheet is the key of the tileset in map's JSON file
   let layer;
@@ -28,11 +32,13 @@ Game.create = () => {
       layer = map.createLayer(i);
   }
   layer.inputEnabled = true; // Allows clicking on the map ; it's enough to do it on the last layer
+  */
 
-  Game.input_types[Phaser.Keyboard.LEFT] = MOVEMENT.LEFT;
-  Game.input_types[Phaser.Keyboard.RIGHT] = MOVEMENT.RIGHT;
-  Game.input_types[Phaser.Keyboard.UP] = MOVEMENT.UP;
-  Game.input_types[Phaser.Keyboard.DOWN] = MOVEMENT.DOWN;
+  Game.input_types[Phaser.Keyboard.LEFT] = ACTION.LEFT;
+  Game.input_types[Phaser.Keyboard.RIGHT] = ACTION.RIGHT;
+  Game.input_types[Phaser.Keyboard.UP] = ACTION.UP;
+  Game.input_types[Phaser.Keyboard.DOWN] = ACTION.DOWN;
+//  Game.input_types[Phaser.Keyboard.Z] = ACTION.FIRE;
 
   client.NewUser();
   client.Ping();
@@ -61,8 +67,32 @@ Game.update = () => {
     sps_timer += phaser.time.elapsedMS;
 };
 
+Game.render = () => {
+  if (Game.started !== true)
+    return;
+
+};
+
 Game.addNewPlayer = function(id, x, y) {
-  Game.player_map[id] = phaser.add.sprite(x, y, 'sprite');
+  let sprite = null;
+  if (id == Game.myid) {
+    sprite = phaser.add.sprite(x, y, 'blueship');
+  }
+  else
+    sprite = phaser.add.sprite(x, y, 'greenship');
+
+  sprite.anchor.setTo(0.5, 0.5);
+  phaser.physics.arcade.enable(sprite);
+
+  const weapon = phaser.add.weapon(10, 'bluebullet1');
+  weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+  weapon.bulletAngleOffset = 90;
+  weapon.bulletSpeed = 800;
+  weapon.fireRate = 200;
+  weapon.trackSprite(sprite, 50, 0, true);
+  sprite.weapon = weapon;
+
+  Game.player_map[id] = sprite;
   Game.player_map[id].player = new Player(id, x, y);
 };
 
@@ -85,6 +115,12 @@ function ServerUpdate(deltaMS) {
 function InputManager() {
   const deltatime = phaser.time.elapsedMS / 1000;
   const hero = Game.player_map[Game.myid];
+
+  hero.rotation = phaser.physics.arcade.angleToPointer(hero);
+
+  if (phaser.input.activePointer.isDown) {
+    hero.weapon.fire();
+  }
 
   for (const type in Game.input_types) {
     if (phaser.input.keyboard.isDown(type))

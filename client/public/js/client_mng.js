@@ -3,7 +3,7 @@ class ClientMng {
     const self = this;
 
     this.SFPS = 200;
-    this.m_socket = io('121.161.44.216:9209', {
+    this.m_socket = io('127.0.0.1:9209', {
       path: '/game'
     });
     this.m_inputs = new Queue();
@@ -71,7 +71,7 @@ class ClientMng {
       deltatime: input_info.deltatime
     };
 
-    this.m_socket.emit(protocol.UPDATEMOVEMENT, snapshot);
+    this.m_socket.emit(protocol.UPDATEACTION, snapshot);
   }
 
   SyncState(player_id) {
@@ -85,8 +85,13 @@ class ClientMng {
   UpdatePredictedState() {
     this.m_predicted_state = this.m_server_state;
     this.m_inputs.ForEach((key, val) => {
-      this.m_predicted_state = this.Move(this.m_predicted_state,
-        val.type, val.deltatime);
+      if (val.type < ACTION.FIRE) {
+        this.m_predicted_state = this.Move(this.m_predicted_state,
+          val.type, val.deltatime);
+      }
+      else if (val.type == ACTION.FIRE) {
+        this.Fire(val.type);
+      }
     });
 
     this.SyncState();
@@ -138,8 +143,6 @@ class ClientMng {
         return;
       }
 
-      console.log(threshold);
-
       if (this.m_extra[id].threshold > 0 &&
         threshold !== this.m_extra[id].threshold) {
         this.m_extra[id].updates.Remove(this.m_extra[id].threshold);
@@ -168,25 +171,25 @@ class ClientMng {
   }
 
   Move(prev_state, type, deltatime) {
-    let delta = {x:0, y:0};
+    let delta = new Vector2();
 
     const hero = Game.player_map[Game.myid];
     const player = hero.player;
 
     switch (type) {
-      case MOVEMENT.LEFT: {
+      case ACTION.LEFT: {
         delta.x = -player.speed * deltatime;
         break;
       }
-      case MOVEMENT.RIGHT: {
+      case ACTION.RIGHT: {
         delta.x = +player.speed * deltatime;
         break;
       }
-      case MOVEMENT.UP: {
+      case ACTION.UP: {
         delta.y = -player.speed * deltatime;
         break;
       }
-      case MOVEMENT.DOWN: {
+      case ACTION.DOWN: {
         delta.y = +player.speed * deltatime;
         break;
       }
@@ -197,5 +200,12 @@ class ClientMng {
       x: prev_state.x + delta.x,
       y: prev_state.y + delta.y
     };
+  }
+
+  Fire(type) {
+    const hero = Game.player_map[Game.myid];
+    console.log('fire start1!');
+    hero.weapon.fire();
+    console.log('fire start2!');
   }
 }

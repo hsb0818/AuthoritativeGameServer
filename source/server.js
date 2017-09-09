@@ -4,6 +4,7 @@ const MyMath = require('./lib/mymath');
 const RoomMng = require('./mng/room_mng');
 const ServerUpdater = require('./mng/server_updater');
 const ServerMng = require('./mng/server_mng');
+const SnapShot = require('./lib/snapshot');
 const PerformanceNow = require("performance-now");
 
 module.exports = (io, socket) => {
@@ -38,7 +39,7 @@ module.exports = (io, socket) => {
       MyMath.RandomInt(100, 400)
     );
 
-    socket.emit(protocol.LOADALLPLAYER, (() => {
+    const data = (() => {
       const users = room.FindAnotherUsers(user.m_socket.id);
       const players = [];
       for (const id in users) {
@@ -49,8 +50,9 @@ module.exports = (io, socket) => {
         myid: user.m_player.id,
         players: players
       };
-    })());
+    })();
 
+    socket.emit(protocol.LOADALLPLAYER, data);
     io.sockets.in(user.m_room).emit(protocol.NEWUSER, {
         id : user.m_player.id,
         pos : user.m_player.pos
@@ -59,7 +61,7 @@ module.exports = (io, socket) => {
 
   socket.on(protocol.GAMEREADY, () => {
     socket.emit(protocol.GAMESTART);
-    socket.on(protocol.UPDATEMOVEMENT, (packet) => {
+    socket.on(protocol.UPDATEACTION, (packet) => {
       ServerUpdater.cinput_queue.Enque({
         socket: socket,
         room: user.m_room,
@@ -70,13 +72,12 @@ module.exports = (io, socket) => {
         server_time: packet.server_time,
       });
 
-      ServerUpdater.snap_queue.Enque({
-        socket: socket,
-        room: room,
-        player: packet.player,
-        type: packet.type,
-        server_time: packet.server_time
-      });
+      ServerUpdater.snap_queue.Enque(new SnapShot(
+        socket,
+        room,
+        packet.player,
+        packet.type,
+        packet.server_time));
     });
   });
 };
