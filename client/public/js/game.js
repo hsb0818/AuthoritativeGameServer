@@ -116,7 +116,7 @@ function InputManager() {
   const hero = Game.player_map[Game.myid];
 
   if (phaser.input.activePointer.isDown) {
-    client.Fire(ACTION.FIRE);
+    client.Fire(Game.myid, ACTION.FIRE);
   }
 
   const angle = phaser.physics.arcade.angleToPointer(hero) * 180 / Math.PI;

@@ -3,6 +3,7 @@
 const Queue = require('../../public/queue');
 const protocol = require('../../public/protocol');
 const ServerMng = require('./server_mng');
+const BulletMng = require('./bullet_mng');
 
 class ServerUpdater {
   constructor () {
@@ -11,7 +12,7 @@ class ServerUpdater {
     this.Server = Server;
     this.Game = Game;
     this.cinput_queue = new Queue(); // for client self
-    this.snap_queue = new Queue(); // for another client
+    this.snap_queue = new Queue(); // Just for another client's position
 
     function Server(deltatime, io) {
       UpdateInput(ServerMng.GDT(), io);
@@ -69,11 +70,28 @@ class ServerUpdater {
     }
 
     function Game(deltatime) {
-      UpdateHit();
+      UpdateBullet(deltatime);
     }
 
-    function UpdateHit() {
+    function UpdateBullet(deltatime) {
+      if(BulletMng.list.IsEmpty())
+        return;
 
+      BulletMng.list.ForEach((idx, state) => {
+        if (state.alive === 0) {
+          console.log('bullet fired!');
+          state.alive = 1;
+          state.socket.broadcast.to(state.room).emit(protocol.SNAPSHOT, {
+            id:state.player.id,
+            type: state.type,
+            server_time: state.server_time
+          });
+        }
+        else if (state.alive < 0) {
+          BulletMng.list.RemoveIdx(idx);
+          console.log('bullet count : ' + BulletMng.list.Count());
+        }
+      });
     }
   }
 }

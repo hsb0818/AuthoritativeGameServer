@@ -4,6 +4,7 @@ const MyMath = require('./lib/mymath');
 const RoomMng = require('./mng/room_mng');
 const ServerUpdater = require('./mng/server_updater');
 const ServerMng = require('./mng/server_mng');
+const BulletMng = require('./mng/bullet_mng');
 const SnapShot = require('./lib/snapshot');
 const PerformanceNow = require("performance-now");
 
@@ -81,8 +82,16 @@ module.exports = (io, socket) => {
         packet.server_time));
     });
 
-    socket.on(protocol.SNAPSHOT, (packet) => {
-      
+    socket.on(protocol.SNAPSHOT, (state) => {
+      BulletMng.list.Enque({
+        alive: 0,
+        socket: socket,
+        room: user.m_room,
+        player: user.m_player,
+        type: state.type,
+        angle: state.angle,
+        server_time: state.server_time,
+      });
     });
   });
 };

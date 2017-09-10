@@ -211,14 +211,17 @@ class ClientMng {
     };
   }
 
-  Fire(type) {
+  Fire(id, type) {
     const server_time = Date.now() + this.C2SDelta();
-    const hero = Game.player_map[Game.myid];
-    this.m_socket.emit(protocol.SNAPSHOT, {
-      type: type,
-      angle: hero.angle,
-      server_time: server_time,
-    });
+    const hero = Game.player_map[id];
+
+    if (id === Game.myid) {
+      this.m_socket.emit(protocol.SNAPSHOT, {
+        type: type,
+        angle: hero.angle,
+        server_time: server_time,
+      });
+    }
 
     hero.weapon.fire();
   }

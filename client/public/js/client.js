@@ -33,3 +33,7 @@ client.m_socket.on(protocol.UPDATEACTIONANOTHER, (state) => {
 client.m_socket.on(protocol.UPDATEACTION, (state) => {
   client.ReConciliation(state);
 });
+
+client.m_socket.on(protocol.SNAPSHOT, (state) => {
+  client.Fire(state.id, state.type);
+});

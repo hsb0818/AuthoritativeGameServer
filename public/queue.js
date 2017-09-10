@@ -61,6 +61,14 @@ class Queue {
       return ret;
     }
 
+    function RemoveIdx(idx) {
+      if (idx < 1 || idx > this.Count())
+        return false;
+
+      m_queue.splice(idx, 1);
+      return true;
+    }
+
     function Remove(count) {
       if (count < 1 || count > this.Count())
         return false;
