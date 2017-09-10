@@ -7,7 +7,6 @@ class ClientMng {
       path: '/game'
     });
     this.m_inputs = new Queue();
-    this.m_snapshots = new Queue();
     this.m_extra = {};
     this.m_server_state = {x:0, y:0, angle:0, seqnum:0};
     this.m_predicted_state = {x:0, y:0, angle:0, seqnum:0};
@@ -19,19 +18,11 @@ class ClientMng {
     let latency = 0;
     let input_seqnum = 0;
     let input_seqnum_last = 0;
-    let snap_seqnum = 0;
-    let snap_seqnum_last = 0;
 
     this.InputSeqNumLast = () => { return input_seqnum_last; };
     this.InputSeqNum = () => {
       input_seqnum_last = input_seqnum;
       return input_seqnum++;
-    };
-
-    this.SnapSeqNumLast = () => { return snap_seqnum_last; };
-    this.SnapSeqNum = () => {
-      snap_seqnum_last = snap_seqnum;
-      snap_seqnum++;
     };
 
     this.ServerTime = () => { return Date.now() + this.C2SDelta(); };
