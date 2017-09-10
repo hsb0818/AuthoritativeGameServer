@@ -4,7 +4,7 @@ const UUID = require('node-uuid');
 const ACTION = require('../../public/define').ACTION;
 
 class Player {
-  constructor(_x, _y) {
+  constructor(_x, _y, _angle) {
     this.id = UUID.v1();
     this.alive = true;
     this.pos = {
@@ -12,10 +12,11 @@ class Player {
       y: _y
     };
 
+    this.angle = _angle;
     this.speed = 150;
   }
 
-  Move(type, deltatime) {
+  Action(type, angle, deltatime) {
     switch (type) {
       case ACTION.LEFT: {
         this.pos.x -= this.speed * deltatime;
@@ -34,6 +35,8 @@ class Player {
         break;
       }
     }
+
+    this.angle = angle;
   }
 }
 

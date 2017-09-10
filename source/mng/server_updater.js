@@ -25,19 +25,21 @@ class ServerUpdater {
       }
 
       while (input !== null) {
-        input.player.Move(input.type, input.deltatime);
+        input.player.Action(input.type, input.angle, input.deltatime);
 
         input.socket.broadcast.to(input.room).emit(protocol.UPDATEACTIONANOTHER, {
           server_time: input.server_time,
           id: input.player.id,
           x: input.player.pos.x,
-          y: input.player.pos.y
+          y: input.player.pos.y,
+          angle: input.player.angle,
         });
 
         input.socket.emit(protocol.UPDATEACTION, {
           seqnum: input.seqnum,
           x: input.player.pos.x,
-          y: input.player.pos.y
+          y: input.player.pos.y,
+          angle: input.player.angle,
         });
 
         input = self.cinput_queue.Deque();

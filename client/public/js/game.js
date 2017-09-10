@@ -84,16 +84,13 @@ Game.addNewPlayer = function(id, x, y) {
   sprite.anchor.setTo(0.5, 0.5);
   phaser.physics.arcade.enable(sprite);
 
-  const weapon = phaser.add.weapon(10, 'bluebullet1');
-  weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
-  weapon.bulletAngleOffset = 90;
-  weapon.bulletSpeed = 800;
-  weapon.fireRate = 200;
-  weapon.trackSprite(sprite, 50, 0, true);
-  sprite.weapon = weapon;
+  const player = new Player(id, x, y);
+  player.InitWeapon(sprite,
+    phaser.add.weapon(10, 'bluebullet1'),
+    Phaser.Weapon.KILL_WORLD_BOUNDS);
 
   Game.player_map[id] = sprite;
-  Game.player_map[id].player = new Player(id, x, y);
+  Game.player_map[id].player = player;
 };
 
 Game.removePlayer = (id) => {
@@ -116,17 +113,25 @@ function InputManager() {
   const deltatime = phaser.time.elapsedMS / 1000;
   const hero = Game.player_map[Game.myid];
 
-  hero.rotation = phaser.physics.arcade.angleToPointer(hero);
-
   if (phaser.input.activePointer.isDown) {
-    hero.weapon.fire();
+    client.Fire();
   }
+
+  const angle = phaser.physics.arcade.angleToPointer(hero) * 180 / Math.PI;
 
   for (const type in Game.input_types) {
-    if (phaser.input.keyboard.isDown(type))
+    if (phaser.input.keyboard.isDown(type)) {
       client.Input({
         type: Game.input_types[type],
-        deltatime: deltatime
+        angle: angle,
+        deltatime: deltatime,
       });
+    }
   }
+
+  client.Input({
+    type: ACTION.ROTATE,
+    angle: angle,
+    deltatime: deltatime,
+  });
 }

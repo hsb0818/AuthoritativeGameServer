@@ -36,7 +36,8 @@ module.exports = (io, socket) => {
   socket.on(protocol.NEWUSER, (packet) => {
     user.m_player = new Player(
       MyMath.RandomInt(100, 400),
-      MyMath.RandomInt(100, 400)
+      MyMath.RandomInt(100, 400),
+      MyMath.RandomInt(0, 90)
     );
 
     const data = (() => {
@@ -54,8 +55,9 @@ module.exports = (io, socket) => {
 
     socket.emit(protocol.LOADALLPLAYER, data);
     io.sockets.in(user.m_room).emit(protocol.NEWUSER, {
-        id : user.m_player.id,
-        pos : user.m_player.pos
+        id: user.m_player.id,
+        pos: user.m_player.pos,
+        angle: user.m_player.angle,
       });
   });
 
@@ -68,8 +70,9 @@ module.exports = (io, socket) => {
         player: user.m_player,
         seqnum: packet.seqnum,
         type: packet.type,
-        deltatime: packet.deltatime,
+        angle: packet.angle,
         server_time: packet.server_time,
+        deltatime: packet.deltatime,
       });
 
       ServerUpdater.snap_queue.Enque(new SnapShot(
@@ -77,6 +80,7 @@ module.exports = (io, socket) => {
         room,
         packet.player,
         packet.type,
+        packet.angle,
         packet.server_time));
     });
   });
