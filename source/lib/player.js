@@ -14,6 +14,9 @@ class Player {
 
     this.angle = _angle;
     this.speed = 150;
+    this.firerate = 500;
+    this.angle = 0;
+    this.bulletspeed = 800;
   }
 
   Action(type, angle, deltatime) {

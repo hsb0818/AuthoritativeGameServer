@@ -95,9 +95,6 @@ class ClientMng {
         this.m_predicted_state = this.Action(this.m_predicted_state,
           val.type, val.deltatime);
         }
-      else if (val.type === ACTION.FIRE) {
-        this.Fire(val.type);
-      }
     }.bind(this));
 
     this.SyncState();
@@ -214,8 +211,15 @@ class ClientMng {
     };
   }
 
-  Fire() {
+  Fire(type) {
+    const server_time = Date.now() + this.C2SDelta();
     const hero = Game.player_map[Game.myid];
+    this.m_socket.emit(protocol.SNAPSHOT, {
+      type: type,
+      angle: hero.angle,
+      server_time: server_time,
+    });
+
     hero.weapon.fire();
   }
 }

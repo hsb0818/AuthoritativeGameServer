@@ -73,21 +73,23 @@ Game.render = () => {
 
 };
 
-Game.addNewPlayer = function(id, x, y) {
+Game.addNewPlayer = function(id, pos, angle, bulletspeed, firerate) {
   let sprite = null;
   if (id == Game.myid) {
-    sprite = phaser.add.sprite(x, y, 'blueship');
+    sprite = phaser.add.sprite(pos.x, pos.y, 'blueship');
   }
   else
-    sprite = phaser.add.sprite(x, y, 'greenship');
+    sprite = phaser.add.sprite(pos.x, pos.y, 'greenship');
 
   sprite.anchor.setTo(0.5, 0.5);
   phaser.physics.arcade.enable(sprite);
 
-  const player = new Player(id, x, y);
+  const player = new Player(id);
   player.InitWeapon(sprite,
     phaser.add.weapon(10, 'bluebullet1'),
-    Phaser.Weapon.KILL_WORLD_BOUNDS);
+    Phaser.Weapon.KILL_WORLD_BOUNDS,
+    bulletspeed,
+    firerate);
 
   Game.player_map[id] = sprite;
   Game.player_map[id].player = player;
@@ -114,7 +116,7 @@ function InputManager() {
   const hero = Game.player_map[Game.myid];
 
   if (phaser.input.activePointer.isDown) {
-    client.Fire();
+    client.Fire(ACTION.FIRE);
   }
 
   const angle = phaser.physics.arcade.angleToPointer(hero) * 180 / Math.PI;

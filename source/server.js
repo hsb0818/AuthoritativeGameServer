@@ -54,15 +54,12 @@ module.exports = (io, socket) => {
     })();
 
     socket.emit(protocol.LOADALLPLAYER, data);
-    io.sockets.in(user.m_room).emit(protocol.NEWUSER, {
-        id: user.m_player.id,
-        pos: user.m_player.pos,
-        angle: user.m_player.angle,
-      });
+    io.sockets.in(user.m_room).emit(protocol.NEWUSER, user.m_player);
   });
 
   socket.on(protocol.GAMEREADY, () => {
     socket.emit(protocol.GAMESTART);
+
     socket.on(protocol.UPDATEACTION, (packet) => {
       ServerUpdater.cinput_queue.Enque({
         socket: socket,
@@ -82,6 +79,10 @@ module.exports = (io, socket) => {
         packet.type,
         packet.angle,
         packet.server_time));
+    });
+
+    socket.on(protocol.SNAPSHOT, (packet) => {
+      
     });
   });
 };

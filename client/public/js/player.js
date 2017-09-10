@@ -8,8 +8,10 @@ class Player {
     this.bulletspeed = 800;
   }
 
-  InitWeapon(sprite, _weapon, type) {
-    const weapon = _weapon;
+  InitWeapon(sprite, weapon, type, bulletspeed, firerate) {
+    this.bulletspeed = bulletspeed;
+    this.firerate = firerate;
+
     weapon.bulletKillType = type;
     weapon.bulletAngleOffset = 90;
     weapon.bulletSpeed = this.bulletspeed;
