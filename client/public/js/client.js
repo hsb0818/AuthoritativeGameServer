@@ -11,7 +11,7 @@ client.m_socket.on(protocol.PONG, (packet) => {
 
 client.m_socket.on(protocol.NEWUSER, (player) => {
   client.NewUserInit(player.id, player.pos, player.angle);
-  Game.addNewPlayer(player.id, player.pos, player.angle, player.bulletspeed, player.firerate);
+  Game.addNewPlayer(player.id, player.pos, player.angle, player.bulletSpeed, player.fireRate);
 });
 
 client.m_socket.on(protocol.LOADALLPLAYER, (packet) => {
@@ -20,7 +20,7 @@ client.m_socket.on(protocol.LOADALLPLAYER, (packet) => {
   Game.myid = packet.myid;
   for(let player of packet.players) {
     client.NewUserInit(player.id, player.pos, player.angle);
-    Game.addNewPlayer(player.id, player.pos, player.angle, player.bulletspeed, player.firerate);
+    Game.addNewPlayer(player.id, player.pos, player.angle, player.bulletSpeed, player.fireRate);
   }
 });
 

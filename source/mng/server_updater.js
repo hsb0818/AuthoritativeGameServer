@@ -11,25 +11,27 @@ class ServerUpdater {
 
     this.Server = Server;
     this.Game = Game;
-    this.cinput_queue = new Queue(); // for client self
-    this.snap_queue = new Queue(); // Just for another client's position
+    this.inputQueue = new Queue();
+    this.snapQueue = new Queue();
 
-    function Server(deltatime, io) {
+    function Server(deltaTime, io) {
       UpdateInput(ServerMng.GDT(), io);
       UpdateSnapshot();
     }
 
-    function UpdateInput(deltatime, io) {
-      let input = self.cinput_queue.Deque();
-      if (input === null) {
+    function UpdateInput(deltaTime, io) {
+      if (self.inputQueue.IsEmpty()) {
         return;
       }
 
+      let input = self.inputQueue.Deque();
       while (input !== null) {
-        input.player.Action(input.type, input.angle, input.deltatime);
+        self.snapQueue.Enque(input);
+
+        input.player.Action(input.type, input.angle, input.deltaTime);
 
         input.socket.broadcast.to(input.room).emit(protocol.UPDATEACTIONANOTHER, {
-          server_time: input.server_time,
+          serverTime: input.serverTime,
           id: input.player.id,
           x: input.player.pos.x,
           y: input.player.pos.y,
@@ -43,37 +45,37 @@ class ServerUpdater {
           angle: input.player.angle,
         });
 
-        input = self.cinput_queue.Deque();
+        input = self.inputQueue.Deque();
       }
     }
 
     //retain only young states by the max-latency.
     function UpdateSnapshot() {
-      if (self.snap_queue.IsEmpty())
+      if (self.snapQueue.IsEmpty())
         return;
 
-      const state = self.snap_queue.Front();
-      if (state.server_time <= Date.now() - ServerMng.MAX_LATENCY()) {
+      const state = self.snapQueue.Front();
+      if (state.serverTime <= Date.now() - ServerMng.MAX_LATENCY()) {
         return;
       }
 
       let threshold = 0;
-      self.snap_queue.ForEach((i, state) => {
-        if (state.server_time > Date.now() - ServerMng.MAX_LATENCY()) {
+      self.snapQueue.ForEach((i, state) => {
+        if (state.serverTime > Date.now() - ServerMng.MAX_LATENCY()) {
           threshold++;
         }
         else
           return null;
       });
 
-      self.snap_queue.Remove(threshold);
+      self.snapQueue.Remove(threshold);
     }
 
-    function Game(deltatime) {
-      UpdateBullet(deltatime);
+    function Game(deltaTime) {
+      UpdateBullet(deltaTime);
     }
 
-    function UpdateBullet(deltatime) {
+    function UpdateBullet(deltaTime) {
       if(BulletMng.list.IsEmpty())
         return;
 
@@ -84,7 +86,7 @@ class ServerUpdater {
           state.socket.broadcast.to(state.room).emit(protocol.SNAPSHOT, {
             id:state.player.id,
             type: state.type,
-            server_time: state.server_time
+            serverTime: state.serverTime
           });
         }
         else if (state.alive < 0) {

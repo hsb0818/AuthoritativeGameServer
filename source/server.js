@@ -26,12 +26,12 @@ module.exports = (io, socket) => {
   socket.on(protocol.PING, (client_time) => {
     socket.emit(protocol.PONG, {
       client_time: client_time,
-      server_time: Date.now(),
+      serverTime: Date.now(),
     });
   });
 
-  socket.on(protocol.PONG, (server_time) => {
-    console.log(Date.now(), server_time);
+  socket.on(protocol.PONG, (serverTime) => {
+    console.log(Date.now(), serverTime);
   });
 
   socket.on(protocol.NEWUSER, (packet) => {
@@ -60,26 +60,17 @@ module.exports = (io, socket) => {
 
   socket.on(protocol.GAMEREADY, () => {
     socket.emit(protocol.GAMESTART);
-
     socket.on(protocol.UPDATEACTION, (packet) => {
-      ServerUpdater.cinput_queue.Enque({
-        socket: socket,
-        room: user.m_room,
-        player: user.m_player,
-        seqnum: packet.seqnum,
-        type: packet.type,
-        angle: packet.angle,
-        server_time: packet.server_time,
-        deltatime: packet.deltatime,
-      });
-
-      ServerUpdater.snap_queue.Enque(new SnapShot(
+      ServerUpdater.inputQueue.Enque(new SnapShot(
         socket,
-        room,
-        packet.player,
+        user.m_room,
+        user.m_player,
+        packet.seqnum,
         packet.type,
         packet.angle,
-        packet.server_time));
+        packet.serverTime,
+        packet.deltaTime)
+      );
     });
 
     socket.on(protocol.SNAPSHOT, (state) => {
@@ -90,7 +81,7 @@ module.exports = (io, socket) => {
         player: user.m_player,
         type: state.type,
         angle: state.angle,
-        server_time: state.server_time,
+        serverTime: state.serverTime,
       });
     });
   });

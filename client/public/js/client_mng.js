@@ -11,7 +11,7 @@ class ClientMng {
     this.m_server_state = {x:0, y:0, angle:0, seqnum:0};
     this.m_predicted_state = {x:0, y:0, angle:0, seqnum:0};
 
-    let server_time = 0;
+    let serverTime = 0;
     let c2s_delta = 0;
     let s2c_delta = 0;
     let round_trip = 0;
@@ -33,8 +33,8 @@ class ClientMng {
       const now = Date.now();
       round_trip = now - packet.client_time;
       latency = round_trip / 2;
-      c2s_delta = packet.server_time - now + latency;
-      s2c_delta = now - packet.server_time + latency;
+      c2s_delta = packet.serverTime - now + latency;
+      s2c_delta = now - packet.serverTime + latency;
     };
 
     this.Ping = () => {
@@ -64,19 +64,19 @@ class ClientMng {
     this.m_socket.emit(protocol.NEWUSER);
   }
 
-  Input(input_info) {
-    this.m_inputs.Enque(input_info);
+  Input(inputInfo) {
+    this.m_inputs.Enque(inputInfo);
     this.UpdatePredictedState();
 
-    const input_snapshot = {
+    const inputSnapshot = {
       seqnum: this.InputSeqNum(),
-      type: input_info.type,
-      angle: input_info.angle,
-      server_time: Date.now() + this.C2SDelta(),
-      deltatime: input_info.deltatime
+      type: inputInfo.type,
+      angle: inputInfo.angle,
+      serverTime: Date.now() + this.C2SDelta(),
+      deltaTime: inputInfo.deltaTime
     };
 
-    this.m_socket.emit(protocol.UPDATEACTION, input_snapshot);
+    this.m_socket.emit(protocol.UPDATEACTION, inputSnapshot);
   }
 
   SyncState(player_id) {
@@ -93,7 +93,7 @@ class ClientMng {
     this.m_inputs.ForEach(function(key, val) {
       if (val.type <= ACTION.ROTATE) {
         this.m_predicted_state = this.Action(this.m_predicted_state,
-          val.type, val.deltatime);
+          val.type, val.deltaTime);
         }
     }.bind(this));
 
@@ -123,7 +123,7 @@ class ClientMng {
       const FindThreshold = function() {
         let threshold = 0;
         this.m_extra[id].updates.ForEach((i, state) => {
-          if (state.server_time < cur)
+          if (state.serverTime < cur)
             threshold++;
           else
             return null;
@@ -157,13 +157,13 @@ class ClientMng {
 
       const before = this.m_extra[id].updates.Value(threshold -1);
       const after = this.m_extra[id].updates.Value(threshold);
-      const total = (after.server_time - before.server_time);
+      const total = (after.serverTime - before.serverTime);
 
       let t = 0;
       if (total === 0)
         t = 1;
       else
-        t = (cur - before.server_time) / total;
+        t = (cur - before.serverTime) / total;
 
       const new_pos = MyMath.Lerp2(before, after, t);
       const new_angle = MyMath.Lerp(before.angle, after.angle, t);
@@ -179,26 +179,26 @@ class ClientMng {
     }
   }
 
-  Action(prev_state, type, deltatime) {
+  Action(prev_state, type, deltaTime) {
     const hero = Game.player_map[Game.myid];
     const player = hero.player;
 
     let delta = new Vector2();
     switch (type) {
       case ACTION.LEFT: {
-        delta.x = -player.speed * deltatime;
+        delta.x = -player.speed * deltaTime;
         break;
       }
       case ACTION.RIGHT: {
-        delta.x = +player.speed * deltatime;
+        delta.x = +player.speed * deltaTime;
         break;
       }
       case ACTION.UP: {
-        delta.y = -player.speed * deltatime;
+        delta.y = -player.speed * deltaTime;
         break;
       }
       case ACTION.DOWN: {
-        delta.y = + player.speed * deltatime;
+        delta.y = + player.speed * deltaTime;
         break;
       }
     }
@@ -212,14 +212,14 @@ class ClientMng {
   }
 
   Fire(id, type) {
-    const server_time = Date.now() + this.C2SDelta();
+    const serverTime = Date.now() + this.C2SDelta();
     const hero = Game.player_map[id];
 
     if (id === Game.myid) {
       this.m_socket.emit(protocol.SNAPSHOT, {
         type: type,
         angle: hero.angle,
-        server_time: server_time,
+        serverTime: serverTime,
       });
     }
 

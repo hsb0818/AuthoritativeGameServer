@@ -112,7 +112,7 @@ function ServerUpdate(deltaMS) {
 }
 
 function InputManager() {
-  const deltatime = phaser.time.elapsedMS / 1000;
+  const deltaTime = phaser.time.elapsedMS / 1000;
   const hero = Game.player_map[Game.myid];
 
   if (phaser.input.activePointer.isDown) {
@@ -126,7 +126,7 @@ function InputManager() {
       client.Input({
         type: Game.input_types[type],
         angle: angle,
-        deltatime: deltatime,
+        deltaTime: deltaTime,
       });
     }
   }
@@ -134,6 +134,6 @@ function InputManager() {
   client.Input({
     type: ACTION.ROTATE,
     angle: angle,
-    deltatime: deltatime,
+    deltaTime: deltaTime,
   });
 }
