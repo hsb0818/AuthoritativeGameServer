@@ -18,6 +18,7 @@ module.exports = (io, socket) => {
   socket.emit(protocol.CONNECT, ServerMng.SFPS());
   socket.on(protocol.DISCONNECT, (packet) => {
     RoomMng.Leave(user);
+    
     io.sockets.in(user.m_room).emit(protocol.REMOVEPLAYER, user.m_player.id);
     console.log(user.m_name + ' leave from room...');
     console.log(RoomMng.GetUserCount(user.m_room) + ' peoples left..');
@@ -60,28 +61,34 @@ module.exports = (io, socket) => {
 
   socket.on(protocol.GAMEREADY, () => {
     socket.emit(protocol.GAMESTART);
-    socket.on(protocol.UPDATEACTION, (packet) => {
-      ServerUpdater.inputQueue.Enque(new SnapShot(
-        socket,
-        user.m_room,
-        user.m_player,
-        packet.seqnum,
-        packet.type,
-        packet.angle,
-        packet.serverTime,
-        packet.deltaTime)
-      );
-    });
+    socket.on(protocol.GAMESTART, () => {
+      console.log('game started');
 
-    socket.on(protocol.SNAPSHOT, (state) => {
-      BulletMng.list.Enque({
-        alive: 0,
-        socket: socket,
-        room: user.m_room,
-        player: user.m_player,
-        type: state.type,
-        angle: state.angle,
-        serverTime: state.serverTime,
+      io.sockets.in(user.m_room).emit(protocol.NEWNPC);
+
+      socket.on(protocol.SNAPSHOT_MOVEMENT, (packet) => {
+        ServerUpdater.inputQueue.Enque(new SnapShot(
+          socket,
+          user.m_room,
+          user.m_player,
+          packet.seqnum,
+          packet.type,
+          packet.angle,
+          packet.serverTime,
+          packet.deltaTime)
+        );
+      });
+
+      socket.on(protocol.SNAPSHOT_BULLET, (state) => {
+        BulletMng.list.Enque({
+          alive: 0,
+          socket: socket,
+          room: user.m_room,
+          player: user.m_player,
+          type: state.type,
+          angle: state.angle,
+          serverTime: state.serverTime,
+        });
       });
     });
   });

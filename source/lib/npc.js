@@ -4,7 +4,8 @@ const UUID = require('node-uuid');
 const ACTION = require('../../public/define').ACTION;
 
 class NPC {
-  constructor(_x, _y, _speed, _fireRate, _bulletSpeed) {
+  constructor(_spriteName, _x, _y, _speed, _fireRate, _bulletSpeed) {
+    this.spriteName = _spriteName;
     this.id = UUID.v1();
     this.alive = true;
     this.pos = {

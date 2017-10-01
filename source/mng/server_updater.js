@@ -30,7 +30,7 @@ class ServerUpdater {
 
         input.player.Action(input.type, input.angle, input.deltaTime);
 
-        input.socket.broadcast.to(input.room).emit(protocol.UPDATEACTIONANOTHER, {
+        input.socket.broadcast.to(input.room).emit(protocol.SNAPSHOT_MOVEMENT_ANOTHER, {
           serverTime: input.serverTime,
           id: input.player.id,
           x: input.player.pos.x,
@@ -38,7 +38,7 @@ class ServerUpdater {
           angle: input.player.angle,
         });
 
-        input.socket.emit(protocol.UPDATEACTION, {
+        input.socket.emit(protocol.SNAPSHOT_MOVEMENT, {
           seqnum: input.seqnum,
           x: input.player.pos.x,
           y: input.player.pos.y,
@@ -83,7 +83,7 @@ class ServerUpdater {
         if (state.alive === 0) {
           console.log('bullet fired!');
           state.alive = 1;
-          state.socket.broadcast.to(state.room).emit(protocol.SNAPSHOT, {
+          state.socket.broadcast.to(state.room).emit(protocol.SNAPSHOT_BULLET, {
             id:state.player.id,
             type: state.type,
             serverTime: state.serverTime

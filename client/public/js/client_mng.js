@@ -56,6 +56,21 @@ class ClientMng {
     this.m_server_state.angle = angle;
   }
 
+  UpdateAnotherUser(state) {
+    if (this.m_extra.hasOwnProperty(state.id) === false)
+      return;
+
+    this.m_extra[state.id].updates.Enque(state);
+  }
+
+  RemoveUser(id) {
+    if (this.m_extra.hasOwnProperty(id) === false)
+      return false;
+
+    delete this.m_extra[id];
+    return true;
+  }
+
   GameReady() {
     this.m_socket.emit(protocol.GAMEREADY);
   }
@@ -76,7 +91,7 @@ class ClientMng {
       deltaTime: inputInfo.deltaTime
     };
 
-    this.m_socket.emit(protocol.UPDATEACTION, inputSnapshot);
+    this.m_socket.emit(protocol.SNAPSHOT_MOVEMENT, inputSnapshot);
   }
 
   SyncState(player_id) {
@@ -131,6 +146,11 @@ class ClientMng {
 
         return threshold;
       }.bind(this);
+
+      if (Game.player_map.hasOwnProperty(id) === false) {
+        console.log('detected access to removed player');
+        return;
+      }
 
       const hero = Game.player_map[id];
 
@@ -216,7 +236,7 @@ class ClientMng {
     const hero = Game.player_map[id];
 
     if (id === Game.myid) {
-      this.m_socket.emit(protocol.SNAPSHOT, {
+      this.m_socket.emit(protocol.SNAPSHOT_BULLET, {
         type: type,
         angle: hero.angle,
         serverTime: serverTime,
