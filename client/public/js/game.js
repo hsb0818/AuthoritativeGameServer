@@ -4,6 +4,9 @@ const Game = {
   playerMap: {},
   inputTypes: {},
   npcMap: {},
+  bulletMap: {},
+  npcGroup: null,
+  playerGroup: null,
 };
 
 Game.Play = () => {
@@ -35,6 +38,14 @@ Game.create = () => {
   }
   layer.inputEnabled = true; // Allows clicking on the map ; it's enough to do it on the last layer
   */
+
+  Game.playerGroup = phaser.add.group();
+  Game.playerGroup.enableBody = true;
+  Game.playerGroup.physicsBodyType = Phaser.Physics.ARCADE;
+
+  Game.npcGroup = phaser.add.group();
+  Game.npcGroup.enableBody = true;
+  Game.npcGroup.physicsBodyType = Phaser.Physics.ARCADE;
 
   Game.inputTypes[Phaser.Keyboard.LEFT] = ACTION.LEFT;
   Game.inputTypes[Phaser.Keyboard.RIGHT] = ACTION.RIGHT;
@@ -71,38 +82,41 @@ Game.update = () => {
 Game.render = () => {
   if (Game.started !== true)
     return;
-
 };
 
-Game.addNewNPC = function(id, spriteName, pos, speed, fireRate, bulletSpeed) {
-  let sprite = phaser.add.sprite(pos.x, pos.y, spriteName);
-
+Game.addNewNPC = function(id, spriteName, pos, speed, fireRate, bulletSpeed, hp, power) {
+  let sprite = Game.npcGroup.create(pos.x, pos.y, spriteName);
+  sprite.name = id.toString();
   sprite.anchor.setTo(0.5, 0.5);
-  phaser.physics.arcade.enable(sprite);
 
   Game.npcMap[id] = sprite;
-  Game.npcMap[id].npc = new NPC(id, spriteName, pos.x, pos.y, speed, fireRate, bulletSpeed);
+
+  const npc = new NPC(sprite, id, speed, fireRate, bulletSpeed,
+    hp, power, phaser.add.group());
+
+  npc.LoadBullet('bluebullet1', Phaser.Physics.ARCADE);
+
+  Game.npcMap[id].npc = npc;
 };
 
-Game.addNewPlayer = function(id, pos, angle, bulletspeed, firerate) {
+Game.addNewPlayer = function(id, pos, speed, angle, fireRate, bulletSpeed, hp, power) {
   let sprite = null;
   if (id == Game.myid) {
-    sprite = phaser.add.sprite(pos.x, pos.y, 'blueship');
+    sprite = Game.playerGroup.create(pos.x, pos.y, 'blueship');
   }
   else
-    sprite = phaser.add.sprite(pos.x, pos.y, 'greenship');
+    sprite = Game.playerGroup.create(pos.x, pos.y, 'greenship');
 
+  sprite.name = id.toString();
   sprite.anchor.setTo(0.5, 0.5);
-  phaser.physics.arcade.enable(sprite);
-
-  const player = new Player(id);
-  player.InitWeapon(sprite,
-    phaser.add.weapon(10, 'bluebullet1'),
-    Phaser.Weapon.KILL_WORLD_BOUNDS,
-    bulletspeed,
-    firerate);
 
   Game.playerMap[id] = sprite;
+
+  const player = new Player(sprite, id, speed, fireRate, bulletSpeed,
+    hp, power, phaser.add.group());
+
+  player.LoadBullet('bluebullet1', Phaser.Physics.ARCADE);
+
   Game.playerMap[id].player = player;
 };
 
@@ -122,12 +136,36 @@ Game.removePlayer = (id) => {
   delete Game.playerMap[id];
 };
 
+Game.removeBullet = (playerId, bulletID) => {
+  const idx = parseInt(bulletID); // id is order on bullet array.
+  const player = Game.playerMap[playerId].player;
+  const bullet = player.bulletGroup.children[idx];
+  console.log(bullet);
+  bullet.kill();
+};
+
+Game.UpdateNPC = (snapshot) => {
+  if (Game.npcMap.hasOwnProperty(snapshot.id) === false)
+    return false;
+
+  const npc = Game.npcMap[snapshot.id].npc;
+  npc.UpdateState(snapshot);
+
+  return true;
+};
+
 function PhysicsUpdate(deltaMS) {
   client.InterpolateEntity();
   InputManager();
+  CollisionDetection();
 }
 
 function ServerUpdate(deltaMS) {
+}
+
+function CollisionDetection() {
+  const player = Game.playerMap[Game.myid].player;
+  phaser.physics.arcade.overlap(player.bulletGroup, Game.npcGroup, CollisionHandlerBullet);
 }
 
 function InputManager() {
@@ -155,4 +193,9 @@ function InputManager() {
     angle: angle,
     deltaTime: deltaTime,
   });
+}
+
+function CollisionHandlerBullet(bullet, target) {
+  client.CollisionHandlerBullet(bullet, target);
+  bullet.kill();
 }

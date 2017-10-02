@@ -16,7 +16,9 @@ class Player {
     this.speed = 150;
     this.fireRate = 500;
     this.angle = 0;
-    this.bulletSpeed = 800;
+    this.bulletSpeed = 600;
+    this.hp = 10;
+    this.power = 5;
   }
 
   Action(type, angle, deltatime) {

@@ -11,7 +11,8 @@ client.m_socket.on(protocol.PONG, (packet) => {
 
 client.m_socket.on(protocol.NEWUSER, (player) => {
   client.NewUserInit(player.id, player.pos, player.angle);
-  Game.addNewPlayer(player.id, player.pos, player.angle, player.bulletSpeed, player.fireRate);
+  Game.addNewPlayer(player.id, player.pos, player.speed, player.angle,
+    player.fireRate, player.bulletSpeed, player.hp, player.power);
 });
 
 client.m_socket.on(protocol.LOADALLPLAYER, (packet) => {
@@ -20,7 +21,8 @@ client.m_socket.on(protocol.LOADALLPLAYER, (packet) => {
   Game.myid = packet.myid;
   for(let player of packet.players) {
     client.NewUserInit(player.id, player.pos, player.angle);
-    Game.addNewPlayer(player.id, player.pos, player.angle, player.bulletSpeed, player.fireRate);
+    Game.addNewPlayer(player.id, player.pos, player.speed, player.angle,
+      player.fireRate, player.bulletSpeed, player.hp, player.power);
   }
 });
 
@@ -43,15 +45,25 @@ client.m_socket.on(protocol.SNAPSHOT_MOVEMENT, (state) => {
 });
 
 client.m_socket.on(protocol.SNAPSHOT_BULLET, (state) => {
-  client.Fire(state.id, state.type);
+  if (state.hasOwnProperty('alive')) {
+    if (state.alive === false) {
+      Game.removeBullet(state.id, state.bulletID);
+    }
+  }
+  else {
+    client.Fire(state.id, state.type);
+  }
 });
 
 client.m_socket.on(protocol.NEWNPC, (npc) => {
-  console.log(npc);
   Game.addNewNPC(npc.id, npc.spriteName, npc.pos,
-    npc.speed, npc.fireRate, npc.bulletSpeed);
+    npc.speed, npc.fireRate, npc.bulletSpeed, npc.hp, npc.power);
 });
 
-client.m_socket.on(protocol.REMOVE_NPC, (npc) => {
-  Game.removeNPC(npc.id);
+client.m_socket.on(protocol.REMOVE_NPC, (npcID) => {
+  Game.removeNPC(npcID);
+});
+
+client.m_socket.on(protocol.SNAPSHOT_NPC, (snapshot) => {
+  Game.UpdateNPC(snapshot);
 });

@@ -243,6 +243,17 @@ class ClientMng {
       });
     }
 
-    hero.weapon.fire();
+    hero.player.Fire(phaser.time.now);
+  }
+
+  CollisionHandlerBullet(bullet, target) {
+    const serverTime = Date.now() + this.C2SDelta();
+
+    this.m_socket.emit(protocol.COLLISION, {
+      type: 0,
+      bulletID: bullet.name,
+      targetID: target.name,
+      serverTime: serverTime,
+    });
   }
 }

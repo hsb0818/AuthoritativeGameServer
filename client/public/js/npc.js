@@ -1,4 +1,4 @@
-class Player {
+class NPC {
   constructor(_sprite, _id, _speed, _fireRate, _bulletSpeed, _hp, _power, group) {
     this.sprite = _sprite;
     this.id = _id;
@@ -20,19 +20,15 @@ class Player {
     this.bulletGroup.setAll('anchor.y', 1.0);
     this.bulletGroup.setAll('outOfBoundsKill', true);
     this.bulletGroup.setAll('checkWorldBounds', true);
-
-    for (let i=0; i<this.bulletGroup.children.length; i++) {
-      this.bulletGroup.children[i].name = i.toString();
-    }
   }
 
-  Fire(currentTime) {
+  Fire(currentTime, angle) {
     if (currentTime > this.bulletTime) {
       const bullet = this.bulletGroup.getFirstExists(false);
       if (bullet === null)
         return false;
 
-      bullet.angle = this.sprite.angle + 90;
+      bullet.angle = angle + 90;
       const rad = MyMath.PI2Rad(bullet.angle - 90);
       const speed = this.bulletSpeed;
       const vec = {
@@ -47,5 +43,14 @@ class Player {
       this.bulletTime = currentTime + this.fireRate;
       return true;
     }
+  }
+
+  UpdateState(snapshot) {
+    this.id = snapshot.id;
+    this.speed = snapshot.speed;
+    this.fireRate = snapshot.fireRate;
+    this.bulletSpeed = snapshot.bulletSpeed;
+    this.hp = snapshot.hp;
+    this.power = snapshot.power;
   }
 }

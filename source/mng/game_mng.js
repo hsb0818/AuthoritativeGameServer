@@ -4,8 +4,9 @@ const protocol = require('../../public/protocol');
 const SCENARIO = require('../define').SCENARIO;
 const UUID = require('node-uuid');
 const Queue = require('../../public/queue');
-const NPC = require('../../public/npc');
+const NPC = require('../lib/npc');
 const MyMath = require('../lib/mymath');
+const SnapShotNPC = require('../lib/snapshot_npc');
 
 class Game {
   constructor(_sockio, _room) {
@@ -28,6 +29,32 @@ class Game {
     this.npcs[npc.id] = npc;
     socket.emit(protocol.NEWNPC, npc);
     console.log('new npc broadcasted!');
+    return true;
+  }
+
+  UpdateNPC(socket, user, state) {
+    if (this.npcs.hasOwnProperty(state.targetID) === false) {
+      console.log('UpdateNPC] target is none in npcs');
+      return false;
+    }
+
+    const npc = this.npcs[state.targetID];
+    npc.UpdateState(state, user.m_player.power);
+
+    socket.broadcast.to(this.room.GetKey()).emit(protocol.SNAPSHOT_BULLET, {
+      alive: false,
+      bulletID: state.bulletID,
+      id: user.m_player.id,
+    });
+
+    if (npc.hp <= 0) {
+      this.RemoveNPC(npc.id);
+    }
+    else {
+      this.sockio.sockets.in(this.room.GetKey()).emit(protocol.SNAPSHOT_NPC,
+        new SnapShotNPC(npc, Date.now()));
+    }
+
     return true;
   }
 
@@ -84,7 +111,6 @@ class GameMng {
       case SCENARIO.NEW_NPC1: {
         if (game.npcs.hasOwnProperty(SCENARIO.NEW_NPC1)) {
           socket.emit(protocol.NEWNPC, game.npcs[SCENARIO.NEW_NPC1]);
-          console.log(game.npcs[SCENARIO.NEW_NPC1]);
         }
         else {
           game.CreateNPC(socket, new NPC(SCENARIO.NEW_NPC1, 'npc1', MyMath.RandomInt(200, 800), MyMath.RandomInt(200, 800), 150, 500, 800));

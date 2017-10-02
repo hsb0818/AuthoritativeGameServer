@@ -8,7 +8,7 @@ const BulletMng = require('./mng/bullet_mng');
 const SnapShot = require('./lib/snapshot');
 const PerformanceNow = require("performance-now");
 const GameMng = require('./mng/game_mng');
-const NPC = require('../public/npc');
+const NPC = require('./lib/npc');
 const SCENARIO = require('./define').SCENARIO;
 
 module.exports = (io, socket) => {
@@ -18,6 +18,8 @@ module.exports = (io, socket) => {
 
   if (GameMng.Exist(room.GetKey()) === false)
     GameMng.Insert(io, room);
+
+  const game = GameMng.Get(room.GetKey());
 
   console.log('joined room users : ' + RoomMng.GetUserCount(user.m_room));
   socket.emit(protocol.CONNECT, ServerMng.SFPS());
@@ -94,6 +96,10 @@ module.exports = (io, socket) => {
           angle: state.angle,
           serverTime: state.serverTime,
         });
+      });
+
+      socket.on(protocol.COLLISION, (packet) => {
+        game.UpdateNPC(socket, user, packet);
       });
     });
   });
