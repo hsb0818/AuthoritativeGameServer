@@ -17,6 +17,7 @@ const protocol = {
   SNAPSHOT_MOVEMENT_ANOTHER: 'SNAPSHOT_MOVEMENT_ANOTHER',
   SNAPSHOT_BULLET: 'SNAPSHOT_BULLET',
   NEWNPC: 'NEWNPC',
+  REMOVE_NPC: 'REMOVE_NPC',
 };
 
 if (typeof module !== 'undefined') {

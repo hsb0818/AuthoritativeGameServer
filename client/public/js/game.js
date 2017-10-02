@@ -1,8 +1,9 @@
 const Game = {
   started: false,
   myid: null,
-  player_map: {},
-  input_types: {},
+  playerMap: {},
+  inputTypes: {},
+  npcMap: {},
 };
 
 Game.Play = () => {
@@ -21,6 +22,7 @@ Game.preload = () => {
   phaser.load.image('blueship','./assets/img/playerShip1_blue.png');
   phaser.load.image('greenship','./assets/img/playerShip1_green.png');
   phaser.load.image('bluebullet1','./assets/img/Bullet1_blue.png');
+  phaser.load.image('npc1','./assets/img/ufo_yel.png');
 };
 
 Game.create = () => {
@@ -34,11 +36,10 @@ Game.create = () => {
   layer.inputEnabled = true; // Allows clicking on the map ; it's enough to do it on the last layer
   */
 
-  Game.input_types[Phaser.Keyboard.LEFT] = ACTION.LEFT;
-  Game.input_types[Phaser.Keyboard.RIGHT] = ACTION.RIGHT;
-  Game.input_types[Phaser.Keyboard.UP] = ACTION.UP;
-  Game.input_types[Phaser.Keyboard.DOWN] = ACTION.DOWN;
-//  Game.input_types[Phaser.Keyboard.Z] = ACTION.FIRE;
+  Game.inputTypes[Phaser.Keyboard.LEFT] = ACTION.LEFT;
+  Game.inputTypes[Phaser.Keyboard.RIGHT] = ACTION.RIGHT;
+  Game.inputTypes[Phaser.Keyboard.UP] = ACTION.UP;
+  Game.inputTypes[Phaser.Keyboard.DOWN] = ACTION.DOWN;
 
   client.NewUser();
   client.Ping();
@@ -73,6 +74,16 @@ Game.render = () => {
 
 };
 
+Game.addNewNPC = function(id, spriteName, pos, speed, fireRate, bulletSpeed) {
+  let sprite = phaser.add.sprite(pos.x, pos.y, spriteName);
+
+  sprite.anchor.setTo(0.5, 0.5);
+  phaser.physics.arcade.enable(sprite);
+
+  Game.npcMap[id] = sprite;
+  Game.npcMap[id].npc = new NPC(id, spriteName, pos.x, pos.y, speed, fireRate, bulletSpeed);
+};
+
 Game.addNewPlayer = function(id, pos, angle, bulletspeed, firerate) {
   let sprite = null;
   if (id == Game.myid) {
@@ -91,16 +102,24 @@ Game.addNewPlayer = function(id, pos, angle, bulletspeed, firerate) {
     bulletspeed,
     firerate);
 
-  Game.player_map[id] = sprite;
-  Game.player_map[id].player = player;
+  Game.playerMap[id] = sprite;
+  Game.playerMap[id].player = player;
+};
+
+Game.removeNPC = (id) => {
+  if (Game.npcMap.hasOwnProperty(id) === false)
+    return;
+
+  Game.npcMap[id].destroy();
+  delete Game.npcMap[id];
 };
 
 Game.removePlayer = (id) => {
-  if (Game.player_map.hasOwnProperty(id) === false)
+  if (Game.playerMap.hasOwnProperty(id) === false)
     return;
 
-  Game.player_map[id].destroy();
-  delete Game.player_map[id];
+  Game.playerMap[id].destroy();
+  delete Game.playerMap[id];
 };
 
 function PhysicsUpdate(deltaMS) {
@@ -113,7 +132,7 @@ function ServerUpdate(deltaMS) {
 
 function InputManager() {
   const deltaTime = phaser.time.elapsedMS / 1000;
-  const hero = Game.player_map[Game.myid];
+  const hero = Game.playerMap[Game.myid];
 
   if (phaser.input.activePointer.isDown) {
     client.Fire(Game.myid, ACTION.FIRE);
@@ -121,10 +140,10 @@ function InputManager() {
 
   const angle = phaser.physics.arcade.angleToPointer(hero) * 180 / Math.PI;
 
-  for (const type in Game.input_types) {
+  for (const type in Game.inputTypes) {
     if (phaser.input.keyboard.isDown(type)) {
       client.Input({
-        type: Game.input_types[type],
+        type: Game.inputTypes[type],
         angle: angle,
         deltaTime: deltaTime,
       });

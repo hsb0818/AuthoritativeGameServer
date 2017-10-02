@@ -96,7 +96,7 @@ class ClientMng {
 
   SyncState(player_id) {
     const apply_state = this.m_predicted_state;
-    const hero = Game.player_map[Game.myid];
+    const hero = Game.playerMap[Game.myid];
 
     hero.x = apply_state.x;
     hero.y = apply_state.y;
@@ -147,12 +147,12 @@ class ClientMng {
         return threshold;
       }.bind(this);
 
-      if (Game.player_map.hasOwnProperty(id) === false) {
+      if (Game.playerMap.hasOwnProperty(id) === false) {
         console.log('detected access to removed player');
         return;
       }
 
-      const hero = Game.player_map[id];
+      const hero = Game.playerMap[id];
 
       let threshold = FindThreshold();
       if (threshold === 0)
@@ -200,7 +200,7 @@ class ClientMng {
   }
 
   Action(prev_state, type, deltaTime) {
-    const hero = Game.player_map[Game.myid];
+    const hero = Game.playerMap[Game.myid];
     const player = hero.player;
 
     let delta = new Vector2();
@@ -233,7 +233,7 @@ class ClientMng {
 
   Fire(id, type) {
     const serverTime = Date.now() + this.C2SDelta();
-    const hero = Game.player_map[id];
+    const hero = Game.playerMap[id];
 
     if (id === Game.myid) {
       this.m_socket.emit(protocol.SNAPSHOT_BULLET, {

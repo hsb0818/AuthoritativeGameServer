@@ -4,6 +4,7 @@ const Queue = require('../../public/queue');
 const protocol = require('../../public/protocol');
 const ServerMng = require('./server_mng');
 const BulletMng = require('./bullet_mng');
+const GameMng = require('./game_mng');
 
 class ServerUpdater {
   constructor () {
@@ -17,6 +18,11 @@ class ServerUpdater {
     function Server(deltaTime, io) {
       UpdateInput(ServerMng.GDT(), io);
       UpdateSnapshot();
+    }
+
+    function Game(deltaTime) {
+      UpdateBullet(deltaTime);
+      GameMng.Update(deltaTime);
     }
 
     function UpdateInput(deltaTime, io) {
@@ -71,17 +77,12 @@ class ServerUpdater {
       self.snapQueue.Remove(threshold);
     }
 
-    function Game(deltaTime) {
-      UpdateBullet(deltaTime);
-    }
-
     function UpdateBullet(deltaTime) {
       if(BulletMng.list.IsEmpty())
         return;
 
       BulletMng.list.ForEach((idx, state) => {
         if (state.alive === 0) {
-          console.log('bullet fired!');
           state.alive = 1;
           state.socket.broadcast.to(state.room).emit(protocol.SNAPSHOT_BULLET, {
             id:state.player.id,

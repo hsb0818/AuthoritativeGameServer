@@ -2,6 +2,7 @@ class Queue {
   constructor() {
     this.Enque = Enque;
     this.Deque = Deque;
+    this.RemoveIdx = RemoveIdx;
     this.Remove = Remove;
     this.IsEmpty = IsEmpty;
     this.ForEach = ForEach;

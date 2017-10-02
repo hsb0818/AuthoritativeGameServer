@@ -45,3 +45,13 @@ client.m_socket.on(protocol.SNAPSHOT_MOVEMENT, (state) => {
 client.m_socket.on(protocol.SNAPSHOT_BULLET, (state) => {
   client.Fire(state.id, state.type);
 });
+
+client.m_socket.on(protocol.NEWNPC, (npc) => {
+  console.log(npc);
+  Game.addNewNPC(npc.id, npc.spriteName, npc.pos,
+    npc.speed, npc.fireRate, npc.bulletSpeed);
+});
+
+client.m_socket.on(protocol.REMOVE_NPC, (npc) => {
+  Game.removeNPC(npc.id);
+});

@@ -7,18 +7,23 @@ const ServerMng = require('./mng/server_mng');
 const BulletMng = require('./mng/bullet_mng');
 const SnapShot = require('./lib/snapshot');
 const PerformanceNow = require("performance-now");
+const GameMng = require('./mng/game_mng');
+const NPC = require('../public/npc');
+const SCENARIO = require('./define').SCENARIO;
 
 module.exports = (io, socket) => {
   RoomMng.Enter(socket.id, socket);
   const user = RoomMng.FindUserByID(socket.id);
   const room = RoomMng.FindRoom(user.m_room);
-  socket.user = user;
+
+  if (GameMng.Exist(room.GetKey()) === false)
+    GameMng.Insert(io, room);
 
   console.log('joined room users : ' + RoomMng.GetUserCount(user.m_room));
   socket.emit(protocol.CONNECT, ServerMng.SFPS());
   socket.on(protocol.DISCONNECT, (packet) => {
     RoomMng.Leave(user);
-    
+
     io.sockets.in(user.m_room).emit(protocol.REMOVEPLAYER, user.m_player.id);
     console.log(user.m_name + ' leave from room...');
     console.log(RoomMng.GetUserCount(user.m_room) + ' peoples left..');
@@ -64,7 +69,7 @@ module.exports = (io, socket) => {
     socket.on(protocol.GAMESTART, () => {
       console.log('game started');
 
-      io.sockets.in(user.m_room).emit(protocol.NEWNPC);
+      GameMng.NextScenario(socket, room.GetKey(), SCENARIO.NEW_NPC1);
 
       socket.on(protocol.SNAPSHOT_MOVEMENT, (packet) => {
         ServerUpdater.inputQueue.Enque(new SnapShot(
