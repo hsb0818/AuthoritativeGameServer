@@ -18,11 +18,12 @@ class ServerUpdater {
     function Server(deltaTime, io) {
       UpdateInput(ServerMng.GDT(), io);
       UpdateSnapshot();
+      GameMng.ServerUpdate(deltaTime, io);
     }
 
     function Game(deltaTime) {
       UpdateBullet(deltaTime);
-      GameMng.Update(deltaTime);
+      GameMng.PhysicsUpdate(deltaTime);
     }
 
     function UpdateInput(deltaTime, io) {

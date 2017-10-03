@@ -140,7 +140,6 @@ Game.removeBullet = (playerId, bulletID) => {
   const idx = parseInt(bulletID); // id is order on bullet array.
   const player = Game.playerMap[playerId].player;
   const bullet = player.bulletGroup.children[idx];
-  console.log(bullet);
   bullet.kill();
 };
 

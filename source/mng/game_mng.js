@@ -70,9 +70,10 @@ class Game {
 
 class GameMng {
   constructor() {
-    let games = {};
-
+    this.snapQue = new Queue();
     const self = this;
+
+    let games = {};
 
     this.Exist = (room_key) => {
       return games.hasOwnProperty(room_key);
@@ -95,7 +96,15 @@ class GameMng {
     };
   }
 
-  Update(deltaTime) {
+  ServerUpdate(deltaTime, sockio) {
+    let snapshot = this.snapQue.Deque();
+    while (snapshot !== null) {
+      snapshot.game.UpdateNPC(snapshot.socket, snapshot.user, snapshot);
+      snapshot = this.snapQue.Deque();
+    }
+  }
+
+  PhysicsUpdate(deltaTime) {
     for (const key in this.Games()) {
       const game = this.Games()[key];
       game.Update(deltaTime);

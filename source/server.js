@@ -99,7 +99,10 @@ module.exports = (io, socket) => {
       });
 
       socket.on(protocol.COLLISION, (packet) => {
-        game.UpdateNPC(socket, user, packet);
+        packet.game = game;
+        packet.socket = socket;
+        packet.user = user;
+        GameMng.snapQue.Enque(packet);
       });
     });
   });
